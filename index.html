@@ -1072,8 +1072,8 @@ total 4
     and systemd.
   - Implemented backend feedback functionality and local database
     persistence.
-  - Received 2nd Runner-Up for Best Design Project and Crowd
-    Favorite at TIP QC's CpE Summit 2026.</div>
+  - Received <a class="terminal-link" href="https://www.facebook.com/share/19Ui9raFkF/" target="_blank" rel="noopener noreferrer">2nd Runner-Up for Best Design Project</a> and
+    <a class="terminal-link" href="https://www.facebook.com/share/1Hgvgi7DPd/" target="_blank" rel="noopener noreferrer">Crowd Favorite</a> at TIP QC's CpE Summit 2026.</div>
 
           <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./projects/misty.txt</span></div>
           <div class="output"><span class="bold yellow">Misty: Mobile-Based Heat Index Recommendation Application</span>
@@ -1284,7 +1284,7 @@ total 4
         '~/skills/automation-and-tools/skills.txt': `Automation and Tools\n  Bash, Python, Ansible, Git, GitHub\n  Cron, Microsoft Excel, Google Sheets`,
         '~/skills/hardware/skills.txt': `Hardware\n  Hardware Diagnostics and Repair\n  Hardware Installation\n  Printer and Peripheral Configuration`,
         '~/experience/erc-data-management-intern.txt': `Energy Regulatory Commission — Pasig City\n  Role: Data Management Intern\n  Period: March 2026 - April 2026 (Total Accumulated: 240.9 Hours)\n\n  - Configured a network printer by assigning its IP address,\n    verifying connectivity using ping, and installing scanning\n    software.\n  - Audited and consolidated digital asset movement records\n    across 13 operational services, supporting data accuracy and\n    audit compliance.\n  - Validated and standardized asset records using Microsoft Excel\n    and Google Sheets for import into the ERC Asset Management\n    System.\n  - Standardized file naming conventions and organized digital\n    records to improve document retrieval and departmental file\n    management.`,
-        '~/projects/senyasalin.txt': `Senyasalin: Offline Filipino Sign Language Recognition with Feedback System\n  Role: Systems Administrator & Backend Developer\n\n  - Deployed backend and edge inference services on an NVIDIA\n    Jetson Orin Nano running Ubuntu Linux.\n  - Optimized real-time inference using NVIDIA TensorRT.\n  - Automated application startup and service management using Bash\n    and systemd.\n  - Implemented backend feedback functionality and local database\n    persistence.\n  - Received 2nd Runner-Up for Best Design Project and Crowd\n    Favorite at TIP QC's CpE Summit 2026.`,
+        '~/projects/senyasalin.txt': `Senyasalin: Offline Filipino Sign Language Recognition with Feedback System\n  Role: Systems Administrator & Backend Developer\n\n  - Deployed backend and edge inference services on an NVIDIA\n    Jetson Orin Nano running Ubuntu Linux.\n  - Optimized real-time inference using NVIDIA TensorRT.\n  - Automated application startup and service management using Bash\n    and systemd.\n  - Implemented backend feedback functionality and local database\n    persistence.\n  - Received 2nd Runner-Up for Best Design Project and\n    Crowd Favorite at TIP QC's CpE Summit 2026.`,
         '~/projects/misty.txt': `Misty: Mobile-Based Heat Index Recommendation Application\n  Role: Project Manager & Backend Developer\n\n  - Developed REST APIs and backend services using Node.js and\n    Express.js.\n  - Integrated Open Weather and OpenCage APIs for weather and\n    geolocation data.\n  - Managed environment variables for API credential protection.`,
         '~/certifications/cisco-networking-academy.txt': `Cisco Networking Academy — Certifications & Technical Training\n  - Linux 1 and Linux 2 (Aug 2025 - May 2026)\n  - DevNet Associate (Jan 2025 - May 2025)\n  - CCNA: Switching, Routing, and Wireless Essentials (Jun 2026)\n  - CCNA: Introduction to Networks (Jan 2025)\n  - IT Essentials: PC Hardware and Software (Jan 2024)`
       };
@@ -1505,6 +1505,18 @@ total 4
           .replace(/>/g, '&gt;');
       }
 
+      function formatCatOutput(text) {
+        return escapeHtml(text)
+          .replace(
+            '2nd Runner-Up for Best Design Project',
+            '<a class="terminal-link" href="https://www.facebook.com/share/19Ui9raFkF/" target="_blank" rel="noopener noreferrer">2nd Runner-Up for Best Design Project</a>'
+          )
+          .replace(
+            'Crowd Favorite',
+            '<a class="terminal-link" href="https://www.facebook.com/share/1Hgvgi7DPd/" target="_blank" rel="noopener noreferrer">Crowd Favorite</a>'
+          );
+      }
+
       function clearTerminalBuffer(tabId) {
         const historyEl = document.getElementById(`interactive-history-${tabId}`);
         if (tabId === 'tab-1') {
@@ -1685,7 +1697,7 @@ Available commands:
               } else if (isImageNode(node)) {
                 outputHtml = `<div class="output">cat: ${escapeHtml(args[0])}: binary image file (use 'xdg-open ${escapeHtml(args[0])}' to view)</div>`;
               } else {
-                outputHtml = `<div class="output">${escapeHtml(node)}</div>`;
+                outputHtml = `<div class="output">${formatCatOutput(node)}</div>`;
               }
             }
             break;
