@@ -97,7 +97,7 @@
 
     .terminal-window {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       width: min(1020px, 100%);
       height: min(760px, calc(100vh - 56px));
       min-height: 480px;
@@ -134,44 +134,87 @@
       display: none;
     }
 
-    .dock-restore-bar {
+    .desktop-shortcut {
       position: fixed;
-      bottom: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 45;
-      display: none;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 14px;
-      border-radius: 12px;
-      background: var(--yaru-dock);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-    }
-
-    .dock-restore-bar.visible {
+      top: 24px;
+      right: 24px;
+      z-index: 1;
       display: flex;
-    }
-
-    .dock-restore-btn {
-      display: inline-flex;
+      flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 8px;
-      background: var(--ubuntu-orange);
+      gap: 6px;
+      width: 84px;
+      padding: 8px 6px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: transparent;
       color: var(--tango-bright);
       font-family: var(--font-ui);
-      font-size: 13px;
-      font-weight: 700;
       cursor: pointer;
+      user-select: none;
+      transition: background 0.14s ease, border-color 0.14s ease, transform 0.1s ease;
     }
 
-    .dock-restore-btn:hover {
-      background: var(--ubuntu-orange-hover);
+    .desktop-shortcut:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .desktop-shortcut:focus-visible {
+      outline: none;
+      background: rgba(233, 84, 32, 0.28);
+      border-color: var(--ubuntu-orange);
+    }
+
+    .desktop-shortcut:active {
+      transform: scale(0.96);
+    }
+
+    .desktop-shortcut-icon {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+    }
+
+    .desktop-shortcut-img {
+      width: 54px;
+      height: 54px;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+    }
+
+    .desktop-shortcut-fallback {
+      width: 54px;
+      height: 54px;
+      border-radius: 13px;
+      background: linear-gradient(155deg, #4b153b 0%, #300a24 58%, #210619 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+      box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      display: none;
+      place-items: center;
+    }
+
+    .desktop-shortcut-fallback svg {
+      width: 30px;
+      height: 30px;
+      display: block;
+    }
+
+    .desktop-shortcut-label {
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 1.2;
+      text-align: center;
+      color: var(--tango-bright);
+      text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.9),
+        0 0 6px rgba(0, 0, 0, 0.75);
+      word-break: break-word;
     }
 
     .headerbar {
@@ -1145,9 +1188,23 @@ total 4
 
   </main>
 
-  <div class="dock-restore-bar" id="dockRestoreBar" role="region" aria-label="Restore Terminal Window">
-    <button type="button" class="dock-restore-btn" id="restoreWindowBtn">Restore Terminal (emmanuel@portfolio)</button>
-  </div>
+  <button type="button" class="desktop-shortcut" id="desktopTerminalShortcut" aria-label="Open Terminal" title="Open Terminal">
+    <span class="desktop-shortcut-icon" aria-hidden="true">
+      <img
+        class="desktop-shortcut-img"
+        src="assets/terminal-icon.png"
+        alt=""
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+      >
+      <span class="desktop-shortcut-fallback">
+        <svg viewBox="0 0 32 32" fill="none">
+          <path d="M7.5 10.5L13.5 16L7.5 21.5" stroke="#ffffff" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M16 21.5H24.5" stroke="#ffffff" stroke-width="2.75" stroke-linecap="round"/>
+        </svg>
+      </span>
+    </span>
+    <span class="desktop-shortcut-label">Terminal</span>
+  </button>
 
   <div class="image-viewer-backdrop" id="image-viewer-modal" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
     <div class="image-viewer-window">
@@ -1199,7 +1256,7 @@ total 4
       const gtkDialogBackdrop = document.getElementById('gtkDialogBackdrop');
       const dialogTitle = document.getElementById('dialogTitle');
       const dialogBody = document.getElementById('dialogBody');
-      const dockRestoreBar = document.getElementById('dockRestoreBar');
+      const desktopTerminalShortcut = document.getElementById('desktopTerminalShortcut');
 
       const imageViewerModal = document.getElementById('image-viewer-modal');
       const viewerTitle = document.getElementById('viewerTitle');
@@ -1909,7 +1966,7 @@ Available commands:
 
       function toggleMaximizeWindow() {
         terminalWindow.classList.remove('minimized', 'closed');
-        dockRestoreBar.classList.remove('visible');
+        desktopTerminalShortcut.classList.remove('is-closed');
         terminalWindow.classList.toggle('maximized');
         document.body.classList.toggle('is-maximized', terminalWindow.classList.contains('maximized'));
         syncMaximizeButtonLabel();
@@ -1925,19 +1982,19 @@ Available commands:
         terminalWindow.classList.remove('maximized');
         document.body.classList.remove('is-maximized');
         terminalWindow.classList.add('minimized');
-        dockRestoreBar.classList.add('visible');
+        desktopTerminalShortcut.classList.remove('is-closed');
       });
 
       document.getElementById('closeBtn').addEventListener('click', () => {
         gtkPopover.classList.remove('open');
         menuBtn.classList.remove('active');
         terminalWindow.classList.add('closed');
-        dockRestoreBar.classList.add('visible');
+        desktopTerminalShortcut.classList.add('is-closed');
       });
 
-      document.getElementById('restoreWindowBtn').addEventListener('click', () => {
+      desktopTerminalShortcut.addEventListener('click', () => {
         terminalWindow.classList.remove('minimized', 'closed');
-        dockRestoreBar.classList.remove('visible');
+        desktopTerminalShortcut.classList.remove('is-closed');
         focusActivePrompt();
       });
 
