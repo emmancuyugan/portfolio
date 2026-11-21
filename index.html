@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#300a24">
+  <meta name="description" content="Emmanuel Luis B. Cuyugan - Linux Systems Administration, Networking and IT Infrastructure Portfolio">
+  <title>emmanuel@portfolio: ~</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400&family=Ubuntu+Sans+Mono:wght@400;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --aubergine: #300a24;
+      --yaru-header: #2b2b2b;
+      --yaru-header-border: #1b1b1b;
+      --yaru-tabbar: #202020;
+      --yaru-surface: #2e2e2e;
+      --yaru-hover: #3c3c3c;
+      --yaru-dock: rgba(24, 24, 24, 0.84);
+      --ubuntu-orange: #e95420;
+      --ubuntu-orange-hover: #f26430;
+      --ubuntu-aubergine-light: #5e2750;
+      --ubuntu-aubergine-dark: #2c001e;
+      --ubuntu-warm-grey: #aea79f;
+      --ubuntu-cool-grey: #333333;
+
+      /* Tango terminal palette */
+      --tango-fg: #eeeeec;
+      --tango-bright: #ffffff;
+      --tango-muted: #babdb6;
+      --tango-black: #2e3436;
+      --tango-green: #8ae234;
+      --tango-blue: #729fcf;
+      --tango-red: #ef2929;
+      --tango-yellow: #fce94f;
+      --tango-cyan: #34e2e2;
+      --tango-magenta: #ad7fa8;
+
+      --font-mono: "Ubuntu Sans Mono", "Ubuntu Mono", "DejaVu Sans Mono", monospace;
+      --font-ui: "Ubuntu", "Cantarell", -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+    }
+
+    body {
+      position: relative;
+      min-height: 100vh;
+      padding: 28px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--ubuntu-aubergine-dark);
+      color: var(--tango-fg);
+      font-family: var(--font-ui);
+      overflow: hidden;
+      transition: padding 0.18s ease;
+    }
+
+    body.is-maximized {
+      padding: 0;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .desktop-wallpaper {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .terminal-window {
+      position: relative;
+      z-index: 1;
+      width: min(1020px, 100%);
+      height: min(760px, calc(100vh - 56px));
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      background: var(--aubergine);
+      box-shadow:
+        0 26px 70px rgba(0, 0, 0, 0.65),
+        0 2px 8px rgba(0, 0, 0, 0.45);
+      transition: width 0.18s ease, height 0.18s ease, border-radius 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .terminal-window.dragging {
+      transition: none;
+      cursor: grabbing;
+    }
+
+    .terminal-window.maximized {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100% !important;
+      left: 0 !important;
+      top: 0 !important;
+      transform: none !important;
+      border-radius: 0;
+      border: none;
+    }
+
+    .terminal-window.minimized,
+    .terminal-window.closed {
+      display: none;
+    }
+
+    .dock-restore-bar {
+      position: fixed;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 45;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      background: var(--yaru-dock);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+    }
+
+    .dock-restore-bar.visible {
+      display: flex;
+    }
+
+    .dock-restore-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 8px;
+      background: var(--ubuntu-orange);
+      color: var(--tango-bright);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .dock-restore-btn:hover {
+      background: var(--ubuntu-orange-hover);
+    }
+
+    .headerbar {
+      position: relative;
+      height: 40px;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px;
+      background: var(--yaru-header);
+      border-bottom: 1px solid var(--yaru-header-border);
+      user-select: none;
+      cursor: grab;
+      touch-action: none;
+    }
+
+    .headerbar:active {
+      cursor: grabbing;
+    }
+
+    .header-left,
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 2;
+      cursor: default;
+    }
+
+    .hb-btn {
+      height: 28px;
+      padding: 0 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: var(--tango-fg);
+      cursor: pointer;
+      transition: background 0.12s ease;
+    }
+
+    .hb-btn:hover {
+      background: rgba(255, 255, 255, 0.11);
+    }
+
+    .hb-btn.icon-only {
+      width: 28px;
+      padding: 0;
+      border-radius: 6px;
+    }
+
+    .hb-btn.icon-only.active {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .hb-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .window-title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 52%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--tango-fg);
+      font-size: 13px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    .window-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-left: 6px;
+    }
+
+    .win-ctrl {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 999px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      color: var(--tango-fg);
+      cursor: pointer;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+
+    .win-ctrl:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .win-ctrl.close {
+      background: var(--yaru-hover);
+      color: var(--tango-fg);
+      margin-left: 2px;
+    }
+
+    .win-ctrl.close:hover,
+    .win-ctrl.close:active {
+      background: var(--ubuntu-orange);
+      color: var(--tango-bright);
+    }
+
+    .win-ctrl svg {
+      width: 10px;
+      height: 10px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .gtk-popover {
+      position: absolute;
+      top: 44px;
+      right: 88px;
+      width: 224px;
+      padding: 6px;
+      border-radius: 10px;
+      background: var(--yaru-surface);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 30;
+      user-select: none;
+      cursor: default;
+    }
+
+    .gtk-popover.open {
+      display: flex;
+    }
+
+    .popover-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 7px 10px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--tango-fg);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .popover-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .popover-accel {
+      font-size: 11px;
+      color: var(--ubuntu-warm-grey);
+    }
+
+    .search-bar {
+      display: none;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 5px 10px;
+      background: #242424;
+      border-bottom: 1px solid #161616;
+    }
+
+    .search-bar.open {
+      display: flex;
+    }
+
+    .search-input {
+      width: min(250px, 60vw);
+      height: 26px;
+      padding: 0 9px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #1a1a1a;
+      color: var(--tango-fg);
+      font-family: var(--font-ui);
+      font-size: 12.5px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: var(--ubuntu-orange);
+    }
+
+    .search-count {
+      font-size: 12px;
+      color: var(--ubuntu-warm-grey);
+      min-width: 62px;
+    }
+
+    .tabbar {
+      height: 32px;
+      min-height: 32px;
+      display: none;
+      align-items: stretch;
+      background: var(--yaru-tabbar);
+      border-bottom: 1px solid #151515;
+      overflow-x: auto;
+      scrollbar-width: none;
+      user-select: none;
+    }
+
+    .tabbar.visible {
+      display: flex;
+    }
+
+    .tabbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-item {
+      flex: 1 1 0;
+      min-width: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 0 8px 0 14px;
+      background: #232323;
+      border-right: 1px solid #141414;
+      color: var(--ubuntu-warm-grey);
+      font-size: 12px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .tab-item.active {
+      background: var(--aubergine);
+      color: var(--tango-fg);
+      font-weight: 500;
+    }
+
+    .tab-item.active::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--ubuntu-orange);
+    }
+
+    .tab-title {
+      flex: 1;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tab-close {
+      width: 18px;
+      height: 18px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: inherit;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      opacity: 0.7;
+      cursor: pointer;
+    }
+
+    .tab-close:hover {
+      background: rgba(255, 255, 255, 0.14);
+      opacity: 1;
+    }
+
+    .terminal-body {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      background: var(--aubergine);
+      cursor: text;
+    }
+
+    .resize-osd {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 7px 14px;
+      border-radius: 8px;
+      background: rgba(24, 24, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--tango-bright);
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.16s ease;
+      z-index: 20;
+    }
+
+    .resize-osd.visible {
+      opacity: 1;
+    }
+
+    .terminal-pane {
+      display: none;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      padding: 12px 14px 20px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+    }
+
+    .terminal-pane.active {
+      display: block;
+    }
+
+    .terminal-pane::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .terminal-pane::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .terminal-pane::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+    }
+
+    .terminal-pane::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.36);
+    }
+
+    .terminal-content {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      line-height: 1.25;
+      color: var(--tango-fg);
+      overflow-wrap: anywhere;
+    }
+
+    .line {
+      min-height: 1.25em;
+      white-space: pre-wrap;
+    }
+
+    .output {
+      margin: 0 0 11px;
+      white-space: pre-wrap;
+    }
+
+    .prompt-line {
+      margin: 1px 0;
+      white-space: pre-wrap;
+    }
+
+    .ps1-userhost {
+      color: var(--tango-green);
+      font-weight: 700;
+    }
+
+    .ps1-colon,
+    .ps1-dollar {
+      color: var(--tango-fg);
+      font-weight: 400;
+    }
+
+    .ps1-path {
+      color: var(--tango-blue);
+      font-weight: 700;
+    }
+
+    .cmd-text {
+      color: var(--tango-bright);
+    }
+
+    .muted { color: var(--tango-muted); }
+    .green { color: var(--tango-green); }
+    .blue { color: var(--tango-blue); }
+    .yellow { color: var(--tango-yellow); }
+    .cyan { color: var(--tango-cyan); }
+    .red { color: var(--tango-red); }
+    .orange { color: var(--ubuntu-orange); }
+    .bold { font-weight: 700; }
+
+    .ls-dir {
+      color: var(--tango-blue);
+      font-weight: 700;
+    }
+
+    .terminal-link {
+      color: var(--tango-green);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+    }
+
+    .terminal-link:hover {
+      color: var(--tango-bright);
+      background: rgba(138, 226, 52, 0.16);
+    }
+
+    .live-prompt-row {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    .live-input-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .input-mirror {
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--tango-bright);
+      pointer-events: none;
+    }
+
+    .vte-cursor {
+      display: inline-block;
+      width: 0.55em;
+      height: 1.12em;
+      vertical-align: -0.16em;
+      background: var(--tango-fg);
+      border: 1px solid var(--tango-fg);
+      animation: vte-blink 1.06s steps(1, end) infinite;
+    }
+
+    @keyframes vte-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0.15; }
+    }
+
+    body.window-unfocused .vte-cursor {
+      background: transparent;
+      border: 1px solid var(--tango-fg);
+      animation: none;
+      opacity: 1;
+    }
+
+    .bash-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: transparent;
+      caret-color: transparent;
+      font-family: var(--font-mono);
+      font-size: 15px;
+      line-height: 1.25;
+      padding: 0;
+      margin: 0;
+    }
+
+    mark.search-hit {
+      background: var(--tango-yellow);
+      color: var(--tango-black);
+    }
+
+    .terminal-pane ::selection {
+      background: rgba(114, 159, 207, 0.32);
+      color: var(--tango-fg);
+    }
+
+    .gtk-dialog-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.56);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+      padding: 16px;
+    }
+
+    .gtk-dialog-backdrop.open {
+      display: flex;
+    }
+
+    .gtk-dialog {
+      width: min(380px, 100%);
+      background: var(--yaru-surface);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+      color: var(--tango-fg);
+    }
+
+    .gtk-dialog h2 {
+      margin: 0 0 6px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .gtk-dialog p {
+      margin: 4px 0;
+      font-size: 13px;
+      color: var(--ubuntu-warm-grey);
+    }
+
+    .gtk-dialog-btn {
+      margin-top: 14px;
+      padding: 7px 18px;
+      border: none;
+      border-radius: 8px;
+      background: var(--ubuntu-orange);
+      color: var(--tango-bright);
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .gtk-dialog-btn:hover {
+      background: var(--ubuntu-orange-hover);
+    }
+
+    .image-viewer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.68);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 16px;
+    }
+
+    .image-viewer-backdrop.open {
+      display: flex;
+    }
+
+    .image-viewer-window {
+      width: min(540px, 100%);
+      background: var(--yaru-header);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+      color: var(--tango-fg);
+    }
+
+    .viewer-header {
+      height: 38px;
+      padding: 0 10px 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--yaru-header);
+      border-bottom: 1px solid var(--yaru-header-border);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .viewer-body {
+      padding: 16px;
+      background: var(--yaru-tabbar);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .id-card-frame {
+      width: 100%;
+      max-height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #181818;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #id-card-img {
+      max-width: 100%;
+      max-height: 360px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    .viewer-fallback {
+      display: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      background: var(--aubergine);
+      border: 1px solid rgba(233, 84, 32, 0.45);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: var(--tango-fg);
+      text-align: left;
+    }
+
+    .viewer-fallback.visible {
+      display: block;
+    }
+
+    .viewer-actions {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--tango-muted);
+    }
+
+    .viewer-file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--yaru-hover);
+      color: var(--tango-bright);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .viewer-file-label:hover {
+      background: #4e4e4e;
+    }
+
+    #idFileInput {
+      display: none;
+    }
+
+    .viewer-direct-link {
+      color: var(--tango-green);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 0;
+      }
+
+      .terminal-window {
+        width: 100% !important;
+        height: 100vh !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: none !important;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      .headerbar {
+        cursor: default;
+      }
+
+      .window-title {
+        max-width: 44%;
+        font-size: 12px;
+      }
+
+      .terminal-pane {
+        padding: 10px 10px 18px;
+      }
+
+      .terminal-content,
+      .bash-input {
+        font-size: 13.5px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="sr-only">Emmanuel Luis B. Cuyugan</h1>
+
+  <img
+    class="desktop-wallpaper"
+    alt="Ubuntu Desktop Wallpaper"
+    src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232c001e'/%3E%3Cstop offset='50%25' stop-color='%235e2750'/%3E%3Cstop offset='100%25' stop-color='%23772953'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='25%25' cy='30%25' r='55%25'%3E%3Cstop offset='0%25' stop-color='%23e95420' stop-opacity='0.42'/%3E%3Cstop offset='100%25' stop-color='%23e95420' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='1600' height='900' fill='url(%23bg)'/%3E%3Crect width='1600' height='900' fill='url(%23glow)'/%3E%3Cpolygon points='0,900 620,260 1120,900' fill='%23240018' fill-opacity='0.34'/%3E%3Cpolygon points='720,0 1600,0 1600,640 1040,420' fill='%23e95420' fill-opacity='0.14'/%3E%3Ccircle cx='1280' cy='210' r='220' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='2'/%3E%3C/svg%3E"
+  >
+
+  <main class="terminal-window" id="terminalWindow" aria-label="Ubuntu GNOME Terminal">
+
+    <header class="headerbar" id="headerBar">
+      <div class="header-left">
+        <button type="button" class="hb-btn icon-only" id="newTabBtn" title="New Tab (Ctrl+Shift+T)" aria-label="New Tab">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 3.2v9.6M3.2 8h9.6"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="window-title" id="windowTitle">emmanuel@portfolio: ~</div>
+
+      <div class="header-right">
+        <button type="button" class="hb-btn icon-only" id="searchToggleBtn" title="Find (Ctrl+Shift+F)" aria-label="Find">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.3"/>
+            <path d="M10.3 10.3L13.8 13.8"/>
+          </svg>
+        </button>
+
+        <button type="button" class="hb-btn icon-only" id="menuBtn" title="Main Menu" aria-label="Main Menu">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/>
+          </svg>
+        </button>
+
+        <div class="window-controls" aria-label="Window controls">
+          <button type="button" class="win-ctrl" id="minimizeBtn" title="Minimize" aria-label="Minimize">
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M2.5 6h7"/>
+            </svg>
+          </button>
+          <button type="button" class="win-ctrl" id="maximizeBtn" title="Maximize" aria-label="Maximize">
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <rect x="2.5" y="2.5" width="7" height="7" rx="0.4"/>
+            </svg>
+          </button>
+          <button type="button" class="win-ctrl close" id="closeBtn" title="Close" aria-label="Close">
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+              <path d="M3 3l6 6M9 3L3 9"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="gtk-popover" id="gtkPopover" role="menu">
+        <button type="button" class="popover-item" id="menuNewTab">
+          <span>New Tab</span>
+          <span class="popover-accel">Ctrl+Shift+T</span>
+        </button>
+        <button type="button" class="popover-item" id="menuFind">
+          <span>Find…</span>
+          <span class="popover-accel">Ctrl+Shift+F</span>
+        </button>
+        <button type="button" class="popover-item" id="menuClear">
+          <span>Reset and Clear</span>
+          <span class="popover-accel">Ctrl+L</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="search-bar" id="searchBar">
+      <input type="text" class="search-input" id="searchInput" placeholder="Find" aria-label="Find in terminal">
+      <span class="search-count" id="searchCount">0 matches</span>
+      <button type="button" class="hb-btn icon-only" id="searchCloseBtn" title="Close Find" aria-label="Close Find">
+        <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+    </div>
+
+    <nav class="tabbar" id="tabBar" aria-label="Terminal tabs">
+      <div class="tab-item active" data-tab="tab-1">
+        <span class="tab-title">emmanuel@portfolio: ~</span>
+        <button type="button" class="tab-close" title="Close Tab" aria-label="Close Tab">&times;</button>
+      </div>
+    </nav>
+
+    <section class="terminal-body" id="terminalBody">
+      <div class="resize-osd" id="resizeOsd" aria-hidden="true">80×24</div>
+
+      <div class="terminal-pane active" id="tab-1">
+        <div class="terminal-content" id="output-tab-1">
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">xdg-open </span><a class="terminal-link" href="assets/id.png" onclick="openIdViewer(event, 'assets/id.png')">assets/id.png</a></div>
+          <div class="output muted">Opening "assets/id.png" with Image Viewer... (click <a class="terminal-link" href="assets/id.png" onclick="openIdViewer(event, 'assets/id.png')">assets/id.png</a> above or run <span class="cmd-text">xdg-open assets/id.png</span>)</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">whoami</span></div>
+          <div class="output">emmanuel</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat about.txt</span></div>
+          <div class="output"><span class="bold yellow">NAME</span>
+  Emmanuel Luis Cuyugan
+
+<span class="bold yellow">LOCATION</span>
+  Quezon City, Philippines
+
+<span class="bold yellow">PROFILE</span>
+  Bachelor of Science in Computer Engineering graduate with a
+  specialization in Systems Administration from the
+  Technological Institute of the Philippines - Quezon City
+  (graduated April 25, 2026).
+
+  Focused on Linux Systems Administration, Networking, and
+  IT Infrastructure.</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">ls -l ./skills/</span></div>
+          <div class="output">total 20
+drwxr-xr-x 2 emmanuel emmanuel 4096 Nov 21 18:00 <span class="ls-dir">systems-administration</span>
+drwxr-xr-x 2 emmanuel emmanuel 4096 Nov 21 18:00 <span class="ls-dir">networking</span>
+drwxr-xr-x 2 emmanuel emmanuel 4096 Nov 21 18:00 <span class="ls-dir">virtualization</span>
+drwxr-xr-x 2 emmanuel emmanuel 4096 Nov 21 18:00 <span class="ls-dir">automation-and-tools</span>
+drwxr-xr-x 2 emmanuel emmanuel 4096 Nov 21 18:00 <span class="ls-dir">hardware</span></div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./skills/systems-administration/skills.txt</span></div>
+          <div class="output"><span class="green">Systems Administration</span>
+  Linux (Ubuntu, CentOS), Windows
+  User and Group Management, Process Management
+  SSH, systemd</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./skills/networking/skills.txt</span></div>
+          <div class="output"><span class="green">Networking</span>
+  Cisco Routers and Switches, TCP/IP
+  Routing, Subnetting, VLANs, NAT
+  Wireshark, Network Troubleshooting</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./skills/virtualization/skills.txt</span></div>
+          <div class="output"><span class="green">Virtualization</span>
+  VMware, VirtualBox</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./skills/automation-and-tools/skills.txt</span></div>
+          <div class="output"><span class="green">Automation and Tools</span>
+  Bash, Python, Ansible, Git, GitHub
+  Cron, Microsoft Excel, Google Sheets</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./skills/hardware/skills.txt</span></div>
+          <div class="output"><span class="green">Hardware</span>
+  Hardware Diagnostics and Repair
+  Hardware Installation
+  Printer and Peripheral Configuration</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">ls -l ./experience/ ./projects/ ./certifications/</span></div>
+          <div class="output">./experience/:
+total 4
+-rw-r--r-- 1 emmanuel emmanuel 780 Nov 21 18:00 erc-data-management-intern.txt
+
+./projects/:
+total 8
+-rw-r--r-- 1 emmanuel emmanuel 680 Nov 21 18:00 senyasalin.txt
+-rw-r--r-- 1 emmanuel emmanuel 420 Nov 21 18:00 misty.txt
+
+./certifications/:
+total 4
+-rw-r--r-- 1 emmanuel emmanuel 540 Nov 21 18:00 cisco-networking-academy.txt</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./experience/erc-data-management-intern.txt</span></div>
+          <div class="output"><span class="bold yellow">Energy Regulatory Commission — Pasig City</span>
+  Role: Data Management Intern
+  Period: March 2026 - April 2026 (Total Accumulated: 240.9 Hours)
+
+  - Configured a network printer by assigning its IP address,
+    verifying connectivity using ping, and installing scanning
+    software.
+  - Audited and consolidated digital asset movement records
+    across 13 operational services, supporting data accuracy and
+    audit compliance.
+  - Validated and standardized asset records using Microsoft Excel
+    and Google Sheets for import into the ERC Asset Management
+    System.
+  - Standardized file naming conventions and organized digital
+    records to improve document retrieval and departmental file
+    management.</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./projects/senyasalin.txt</span></div>
+          <div class="output"><span class="bold yellow">Senyasalin: Offline Filipino Sign Language Recognition with Feedback System</span>
+  Role: Systems Administrator &amp; Backend Developer
+
+  - Deployed backend and edge inference services on an NVIDIA
+    Jetson Orin Nano running Ubuntu Linux.
+  - Optimized real-time inference using NVIDIA TensorRT.
+  - Automated application startup and service management using Bash
+    and systemd.
+  - Implemented backend feedback functionality and local database
+    persistence.
+  - Received 2nd Runner-Up for Best Design Project and Crowd
+    Favorite at TIP QC's CpE Summit 2026.</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./projects/misty.txt</span></div>
+          <div class="output"><span class="bold yellow">Misty: Mobile-Based Heat Index Recommendation Application</span>
+  Role: Project Manager &amp; Backend Developer
+
+  - Developed REST APIs and backend services using Node.js and
+    Express.js.
+  - Integrated Open Weather and OpenCage APIs for weather and
+    geolocation data.
+  - Managed environment variables for API credential protection.</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat ./certifications/cisco-networking-academy.txt</span></div>
+          <div class="output"><span class="bold yellow">Cisco Networking Academy — Certifications &amp; Technical Training</span>
+  - Linux 1 and Linux 2 (Aug 2025 - May 2026)
+  - DevNet Associate (Jan 2025 - May 2025)
+  - CCNA: Switching, Routing, and Wireless Essentials (Jun 2026)
+  - CCNA: Introduction to Networks (Jan 2025)
+  - IT Essentials: PC Hardware and Software (Jan 2024)</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat education.txt</span></div>
+          <div class="output"><span class="bold yellow">Technological Institute of the Philippines — Quezon City</span>
+  Degree: Bachelor of Science in Computer Engineering
+  Specialization: Systems Administration
+  Graduated: April 25, 2026
+  Accreditation: ABET Engineering Accreditation Commission (EAC)
+  Relevant Coursework: Linux Systems Administration, System and
+    Network Administration, Data Communications and Networking,
+    Operating Systems, Information Security, Cloud Computing
+    Foundations</div>
+
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">cat contact.txt</span></div>
+          <div class="output"><span class="bold yellow">LOCATION</span>
+  Quezon City, Philippines
+
+<span class="bold yellow">EMAIL</span>
+  <a class="terminal-link" href="mailto:emmancuyugan@gmail.com">emmancuyugan@gmail.com</a>
+
+<span class="bold yellow">PHONE</span>
+  <a class="terminal-link" href="tel:+639683251772">+639683251772</a>
+
+<span class="bold yellow">GITHUB</span>
+  <a class="terminal-link" href="https://github.com/emmancuyugan" target="_blank" rel="noopener noreferrer">https://github.com/emmancuyugan</a>
+
+<span class="bold yellow">LINKEDIN</span>
+  <a class="terminal-link" href="https://www.linkedin.com/in/emmancuyugan/" target="_blank" rel="noopener noreferrer">https://www.linkedin.com/in/emmancuyugan/</a></div>
+
+          <div id="interactive-history-tab-1"></div>
+
+          <div class="live-prompt-row" id="prompt-row-tab-1">
+            <span><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path" id="cwd-tab-1">~</span><span class="ps1-dollar">$ </span></span>
+            <div class="live-input-wrap">
+              <span class="input-mirror" id="mirror-tab-1"></span><span class="vte-cursor" aria-hidden="true"></span>
+              <input
+                type="text"
+                class="bash-input"
+                id="input-tab-1"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
+                aria-label="Ubuntu bash command prompt"
+              >
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="dock-restore-bar" id="dockRestoreBar" role="region" aria-label="Restore Terminal Window">
+    <button type="button" class="dock-restore-btn" id="restoreWindowBtn">Restore Terminal (emmanuel@portfolio)</button>
+  </div>
+
+  <div class="image-viewer-backdrop" id="image-viewer-modal" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
+    <div class="image-viewer-window">
+      <div class="viewer-header">
+        <span id="viewerTitle">assets/id.png — Image Viewer</span>
+        <button type="button" class="win-ctrl close" id="viewerCloseBtn" title="Close Viewer" aria-label="Close Viewer">
+          <svg viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M3 3l6 6M9 3L3 9"/>
+          </svg>
+        </button>
+      </div>
+      <div class="viewer-body">
+        <div class="id-card-frame" id="idCardFrame">
+          <img id="id-card-img" src="assets/id.png" alt="Emmanuel Luis B. Cuyugan ID">
+        </div>
+        <div class="viewer-fallback" id="viewerFallback">
+          <strong><span id="viewerMissingName">assets/id.png</span> not found yet.</strong><br>
+          Place your ID image at <code>./assets/id.png</code> alongside <code>index.html</code>, or load a local image file below to preview it right now:
+        </div>
+        <div class="viewer-actions">
+          <label class="viewer-file-label" for="idFileInput">
+            <span>Choose Local ID Image…</span>
+          </label>
+          <input type="file" id="idFileInput" accept="image/*">
+          <a class="viewer-direct-link" id="viewerDirectLink" href="assets/id.png" target="_blank" rel="noopener noreferrer">Open raw assets/id.png</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="gtk-dialog-backdrop" id="gtkDialogBackdrop" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+    <div class="gtk-dialog">
+      <h2 id="dialogTitle">GNOME Terminal</h2>
+      <p id="dialogBody">A terminal emulator for the GNOME desktop.</p>
+      <button type="button" class="gtk-dialog-btn" id="dialogCloseBtn">Close</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const terminalWindow = document.getElementById('terminalWindow');
+      const headerBar = document.getElementById('headerBar');
+      const terminalBody = document.getElementById('terminalBody');
+      const windowTitle = document.getElementById('windowTitle');
+      const tabBar = document.getElementById('tabBar');
+      const resizeOsd = document.getElementById('resizeOsd');
+      const gtkPopover = document.getElementById('gtkPopover');
+      const menuBtn = document.getElementById('menuBtn');
+      const gtkDialogBackdrop = document.getElementById('gtkDialogBackdrop');
+      const dialogTitle = document.getElementById('dialogTitle');
+      const dialogBody = document.getElementById('dialogBody');
+      const dockRestoreBar = document.getElementById('dockRestoreBar');
+
+      const imageViewerModal = document.getElementById('image-viewer-modal');
+      const viewerTitle = document.getElementById('viewerTitle');
+      const viewerMissingName = document.getElementById('viewerMissingName');
+      const viewerDirectLink = document.getElementById('viewerDirectLink');
+      const idCardImg = document.getElementById('id-card-img');
+      const idCardFrame = document.getElementById('idCardFrame');
+      const viewerFallback = document.getElementById('viewerFallback');
+      const idFileInput = document.getElementById('idFileInput');
+
+      let activeTabId = 'tab-1';
+      let tabCounter = 1;
+      let resizeTimer = null;
+      let customObjectUrl = null;
+      let currentViewerPath = 'assets/id.png';
+      let savedScrollTop = null;
+      let savedScrollTabId = null;
+      let searchHits = [];
+      let searchHitIndex = -1;
+
+      function syncWindowAndDocTitle(cwd) {
+        const titleText = `emmanuel@portfolio: ${cwd}`;
+        windowTitle.textContent = titleText;
+        document.title = titleText;
+      }
+
+      const VFS = {
+        '~': {
+          type: 'dir',
+          entries: ['about.txt', 'education.txt', 'contact.txt', 'skills', 'experience', 'projects', 'certifications', 'assets']
+        },
+        '~/assets': {
+          type: 'dir',
+          entries: ['id.png']
+        },
+        '~/skills': {
+          type: 'dir',
+          entries: ['systems-administration', 'networking', 'virtualization', 'automation-and-tools', 'hardware']
+        },
+        '~/skills/systems-administration': {
+          type: 'dir',
+          entries: ['skills.txt']
+        },
+        '~/skills/networking': {
+          type: 'dir',
+          entries: ['skills.txt']
+        },
+        '~/skills/virtualization': {
+          type: 'dir',
+          entries: ['skills.txt']
+        },
+        '~/skills/automation-and-tools': {
+          type: 'dir',
+          entries: ['skills.txt']
+        },
+        '~/skills/hardware': {
+          type: 'dir',
+          entries: ['skills.txt']
+        },
+        '~/experience': {
+          type: 'dir',
+          entries: ['erc-data-management-intern.txt']
+        },
+        '~/projects': {
+          type: 'dir',
+          entries: ['senyasalin.txt', 'misty.txt']
+        },
+        '~/certifications': {
+          type: 'dir',
+          entries: ['cisco-networking-academy.txt']
+        },
+        '~/assets/id.png': {
+          type: 'image',
+          src: 'assets/id.png'
+        },
+        '~/about.txt': `NAME\n  Emmanuel Luis Cuyugan\n\nLOCATION\n  Quezon City, Philippines\n\nPROFILE\n  Bachelor of Science in Computer Engineering graduate with a\n  specialization in Systems Administration from the\n  Technological Institute of the Philippines - Quezon City\n  (graduated April 25, 2026).\n\n  Focused on Linux Systems Administration, Networking, and\n  IT Infrastructure.`,
+        '~/education.txt': `Technological Institute of the Philippines — Quezon City\n  Degree: Bachelor of Science in Computer Engineering\n  Specialization: Systems Administration\n  Graduated: April 25, 2026\n  Accreditation: ABET Engineering Accreditation Commission (EAC)\n  Relevant Coursework: Linux Systems Administration, System and\n    Network Administration, Data Communications and Networking,\n    Operating Systems, Information Security, Cloud Computing\n    Foundations`,
+        '~/contact.txt': `LOCATION\n  Quezon City, Philippines\n\nEMAIL\n  emmancuyugan@gmail.com\n\nPHONE\n  +639683251772\n\nGITHUB\n  https://github.com/emmancuyugan\n\nLINKEDIN\n  https://www.linkedin.com/in/emmancuyugan/`,
+        '~/skills/systems-administration/skills.txt': `Systems Administration\n  Linux (Ubuntu, CentOS), Windows\n  User and Group Management, Process Management\n  SSH, systemd`,
+        '~/skills/networking/skills.txt': `Networking\n  Cisco Routers and Switches, TCP/IP\n  Routing, Subnetting, VLANs, NAT\n  Wireshark, Network Troubleshooting`,
+        '~/skills/virtualization/skills.txt': `Virtualization\n  VMware, VirtualBox`,
+        '~/skills/automation-and-tools/skills.txt': `Automation and Tools\n  Bash, Python, Ansible, Git, GitHub\n  Cron, Microsoft Excel, Google Sheets`,
+        '~/skills/hardware/skills.txt': `Hardware\n  Hardware Diagnostics and Repair\n  Hardware Installation\n  Printer and Peripheral Configuration`,
+        '~/experience/erc-data-management-intern.txt': `Energy Regulatory Commission — Pasig City\n  Role: Data Management Intern\n  Period: March 2026 - April 2026 (Total Accumulated: 240.9 Hours)\n\n  - Configured a network printer by assigning its IP address,\n    verifying connectivity using ping, and installing scanning\n    software.\n  - Audited and consolidated digital asset movement records\n    across 13 operational services, supporting data accuracy and\n    audit compliance.\n  - Validated and standardized asset records using Microsoft Excel\n    and Google Sheets for import into the ERC Asset Management\n    System.\n  - Standardized file naming conventions and organized digital\n    records to improve document retrieval and departmental file\n    management.`,
+        '~/projects/senyasalin.txt': `Senyasalin: Offline Filipino Sign Language Recognition with Feedback System\n  Role: Systems Administrator & Backend Developer\n\n  - Deployed backend and edge inference services on an NVIDIA\n    Jetson Orin Nano running Ubuntu Linux.\n  - Optimized real-time inference using NVIDIA TensorRT.\n  - Automated application startup and service management using Bash\n    and systemd.\n  - Implemented backend feedback functionality and local database\n    persistence.\n  - Received 2nd Runner-Up for Best Design Project and Crowd\n    Favorite at TIP QC's CpE Summit 2026.`,
+        '~/projects/misty.txt': `Misty: Mobile-Based Heat Index Recommendation Application\n  Role: Project Manager & Backend Developer\n\n  - Developed REST APIs and backend services using Node.js and\n    Express.js.\n  - Integrated Open Weather and OpenCage APIs for weather and\n    geolocation data.\n  - Managed environment variables for API credential protection.`,
+        '~/certifications/cisco-networking-academy.txt': `Cisco Networking Academy — Certifications & Technical Training\n  - Linux 1 and Linux 2 (Aug 2025 - May 2026)\n  - DevNet Associate (Jan 2025 - May 2025)\n  - CCNA: Switching, Routing, and Wireless Essentials (Jun 2026)\n  - CCNA: Introduction to Networks (Jan 2025)\n  - IT Essentials: PC Hardware and Software (Jan 2024)`
+      };
+
+      const tabStates = {
+        'tab-1': { cwd: '~', history: [], historyIdx: -1 }
+      };
+
+      function focusActivePrompt(preventScroll = false) {
+        const inp = document.getElementById(`input-${activeTabId}`);
+        if (!inp) return;
+        try {
+          inp.focus({ preventScroll });
+        } catch (err) {
+          inp.focus();
+        }
+      }
+
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let winStartLeft = 0;
+      let winStartTop = 0;
+
+      function ensurePositionedWindow() {
+        const rect = terminalWindow.getBoundingClientRect();
+        terminalWindow.style.position = 'fixed';
+        terminalWindow.style.left = `${rect.left}px`;
+        terminalWindow.style.top = `${rect.top}px`;
+        terminalWindow.style.margin = '0';
+      }
+
+      headerBar.addEventListener('pointerdown', (e) => {
+        if (e.button !== 0) return;
+        if (e.target.closest('button') || e.target.closest('.gtk-popover')) return;
+        if (terminalWindow.classList.contains('maximized') || window.innerWidth <= 680) return;
+
+        ensurePositionedWindow();
+        isDragging = true;
+        terminalWindow.classList.add('dragging');
+        headerBar.setPointerCapture(e.pointerId);
+
+        const rect = terminalWindow.getBoundingClientRect();
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        winStartLeft = rect.left;
+        winStartTop = rect.top;
+      });
+
+      headerBar.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        const maxLeft = Math.max(8, window.innerWidth - 140);
+        const minLeft = -(terminalWindow.offsetWidth - 140);
+        const nextLeft = Math.min(maxLeft, Math.max(minLeft, winStartLeft + dx));
+        const nextTop = Math.min(window.innerHeight - 48, Math.max(0, winStartTop + dy));
+
+        terminalWindow.style.left = `${nextLeft}px`;
+        terminalWindow.style.top = `${nextTop}px`;
+      });
+
+      function stopDragging(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        terminalWindow.classList.remove('dragging');
+        if (e && headerBar.hasPointerCapture && headerBar.hasPointerCapture(e.pointerId)) {
+          headerBar.releasePointerCapture(e.pointerId);
+        }
+      }
+
+      headerBar.addEventListener('pointerup', stopDragging);
+      headerBar.addEventListener('pointercancel', stopDragging);
+
+      headerBar.addEventListener('dblclick', (e) => {
+        if (e.target.closest('button') || e.target.closest('.gtk-popover')) return;
+        toggleMaximizeWindow();
+      });
+
+      function setImageViewerState(hasValidImage) {
+        if (hasValidImage) {
+          idCardFrame.style.display = 'flex';
+          viewerFallback.classList.remove('visible');
+        } else {
+          idCardFrame.style.display = 'none';
+          viewerFallback.classList.add('visible');
+        }
+      }
+
+      idCardImg.addEventListener('load', () => {
+        setImageViewerState(idCardImg.naturalWidth > 0);
+      });
+
+      idCardImg.addEventListener('error', () => {
+        if (!customObjectUrl) {
+          setImageViewerState(false);
+        }
+      });
+
+      window.openIdViewer = function openIdViewer(event, imagePath = 'assets/id.png') {
+        if (event) event.preventDefault();
+        gtkPopover.classList.remove('open');
+        menuBtn.classList.remove('active');
+
+        const activePane = document.getElementById(activeTabId);
+        if (activePane) {
+          savedScrollTabId = activeTabId;
+          savedScrollTop = activePane.scrollTop;
+        }
+
+        const normalizedPath = (imagePath || 'assets/id.png').replace(/^~\//, '').replace(/^\.\//, '');
+        currentViewerPath = normalizedPath;
+        viewerTitle.textContent = `${normalizedPath} — Image Viewer`;
+        viewerMissingName.textContent = normalizedPath;
+        viewerDirectLink.href = normalizedPath;
+        viewerDirectLink.textContent = `Open raw ${normalizedPath}`;
+
+        if (customObjectUrl) {
+          URL.revokeObjectURL(customObjectUrl);
+          customObjectUrl = null;
+          idFileInput.value = '';
+        }
+
+        idCardImg.src = normalizedPath;
+
+        if (idCardImg.complete) {
+          setImageViewerState(idCardImg.naturalWidth > 0);
+        } else {
+          idCardFrame.style.display = 'flex';
+          viewerFallback.classList.remove('visible');
+        }
+
+        imageViewerModal.classList.add('open');
+      };
+
+      idFileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        if (customObjectUrl) URL.revokeObjectURL(customObjectUrl);
+        customObjectUrl = URL.createObjectURL(file);
+        viewerTitle.textContent = `${file.name} — Image Viewer`;
+        idCardImg.src = customObjectUrl;
+        setImageViewerState(true);
+      });
+
+      function closeIdViewer() {
+        imageViewerModal.classList.remove('open');
+        const targetPane = document.getElementById(savedScrollTabId || activeTabId);
+        const scrollToRestore = savedScrollTop;
+        savedScrollTop = null;
+        savedScrollTabId = null;
+
+        focusActivePrompt(true);
+
+        if (targetPane && typeof scrollToRestore === 'number') {
+          requestAnimationFrame(() => {
+            targetPane.scrollTop = scrollToRestore;
+          });
+        }
+      }
+
+      document.getElementById('viewerCloseBtn').addEventListener('click', closeIdViewer);
+
+      imageViewerModal.addEventListener('click', (e) => {
+        if (e.target === imageViewerModal) {
+          closeIdViewer();
+        }
+      });
+
+      window.addEventListener('focus', () => document.body.classList.remove('window-unfocused'));
+      window.addEventListener('blur', () => document.body.classList.add('window-unfocused'));
+
+      function showResizeOsd() {
+        const pane = document.getElementById(activeTabId);
+        if (!pane) return;
+        const cols = Math.max(40, Math.floor((pane.clientWidth - 28) / 7.5));
+        const rows = Math.max(12, Math.floor((pane.clientHeight - 32) / 18.75));
+        resizeOsd.textContent = `${cols}×${rows}`;
+        resizeOsd.classList.add('visible');
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => resizeOsd.classList.remove('visible'), 900);
+      }
+
+      window.addEventListener('resize', showResizeOsd);
+
+      function syncTabPolicy() {
+        const count = tabBar.querySelectorAll('.tab-item').length;
+        tabBar.classList.toggle('visible', count > 1);
+      }
+
+      function resolvePath(cwd, target) {
+        if (!target || target === '~') return '~';
+        let clean = target.replace(/\/+$/, '');
+        if (clean.startsWith('./')) clean = clean.slice(2);
+        if (clean === '.') return cwd;
+        if (clean === '..') {
+          if (cwd === '~') return '~';
+          const parts = cwd.split('/');
+          parts.pop();
+          return parts.join('/') || '~';
+        }
+        if (clean.startsWith('~/')) return clean;
+        return cwd === '~' ? `~/${clean}` : `${cwd}/${clean}`;
+      }
+
+      function isDirNode(node) {
+        return Boolean(node && typeof node === 'object' && node.type === 'dir');
+      }
+
+      function isImageNode(node) {
+        return Boolean(node && typeof node === 'object' && node.type === 'image');
+      }
+
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      function clearTerminalBuffer(tabId) {
+        const historyEl = document.getElementById(`interactive-history-${tabId}`);
+        if (tabId === 'tab-1') {
+          Array.from(document.getElementById('output-tab-1').children).forEach((el) => {
+            if (el.id !== 'interactive-history-tab-1' && el.id !== 'prompt-row-tab-1') {
+              el.remove();
+            }
+          });
+        }
+        if (historyEl) historyEl.innerHTML = '';
+      }
+
+      function runCommand(tabId, rawCmd) {
+        const state = tabStates[tabId];
+        const historyEl = document.getElementById(`interactive-history-${tabId}`);
+        const paneEl = document.getElementById(tabId);
+        const trimmed = rawCmd.trim();
+
+        const promptHtml = `<div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">${escapeHtml(state.cwd)}</span><span class="ps1-dollar">$ </span><span class="cmd-text">${escapeHtml(rawCmd)}</span></div>`;
+
+        if (!trimmed) {
+          historyEl.insertAdjacentHTML('beforeend', promptHtml);
+          paneEl.scrollTop = paneEl.scrollHeight;
+          return;
+        }
+
+        state.history.push(rawCmd);
+        state.historyIdx = state.history.length;
+
+        const parts = trimmed.split(/\s+/);
+        const cmd = parts[0];
+        const args = parts.slice(1);
+        let outputHtml = '';
+
+        switch (cmd) {
+          case 'clear':
+            clearTerminalBuffer(tabId);
+            return;
+
+          case 'xdg-open': {
+            const rawTarget = args[0] || 'assets/id.png';
+            const resolved = resolvePath(state.cwd, rawTarget);
+            const node = VFS[resolved];
+            if (isImageNode(node)) {
+              const displayPath = resolved.replace(/^~\//, '');
+              window.openIdViewer(null, displayPath);
+              outputHtml = `<div class="output muted">Opening "${escapeHtml(displayPath)}" in Image Viewer...</div>`;
+            } else if (isDirNode(node)) {
+              outputHtml = `<div class="output">xdg-open: '${escapeHtml(rawTarget)}' is a directory</div>`;
+            } else if (!node) {
+              outputHtml = `<div class="output">xdg-open: file '${escapeHtml(rawTarget)}' does not exist</div>`;
+            } else {
+              outputHtml = `<div class="output">xdg-open: no image viewer configured for '${escapeHtml(rawTarget)}'</div>`;
+            }
+            break;
+          }
+
+          case 'help':
+            outputHtml = `<div class="output">GNU bash, version 5.3.0(1)-release (x86_64-pc-linux-gnu)
+Available commands:
+  <span class="green">xdg-open assets/id.png</span>  Open ID image in viewer modal
+  <span class="green">ls</span> [-l|-la] [dir]       List directory contents
+  <span class="green">cd</span> [dir]                Change current directory
+  <span class="green">cat</span> &lt;file&gt;              Concatenate and print file contents
+  <span class="green">pwd</span>                     Print working directory
+  <span class="green">whoami</span>                  Print effective userid
+  <span class="green">uname</span> [-a]              Print system information
+  <span class="green">date</span>                    Print system date and time
+  <span class="green">echo</span> &lt;text&gt;             Display a line of text
+  <span class="green">history</span>                 Display command history
+  <span class="green">clear</span>                   Clear the terminal screen</div>`;
+            break;
+
+          case 'whoami':
+            outputHtml = `<div class="output">emmanuel</div>`;
+            break;
+
+          case 'pwd':
+            outputHtml = `<div class="output">${escapeHtml(state.cwd.replace(/^~/, '/home/emmanuel'))}</div>`;
+            break;
+
+          case 'uname':
+            outputHtml = `<div class="output">${args.includes('-a')
+              ? 'Linux portfolio 7.3.0-9-generic #9-Ubuntu SMP PREEMPT_DYNAMIC x86_64 GNU/Linux'
+              : 'Linux'}</div>`;
+            break;
+
+          case 'date':
+            outputHtml = `<div class="output">${new Date().toString()}</div>`;
+            break;
+
+          case 'echo': {
+            let text = trimmed.slice(4).trim().replace(/^["']|["']$/g, '');
+            text = text
+              .replace(/\$USER\b/g, 'emmanuel')
+              .replace(/\$HOSTNAME\b/g, 'portfolio')
+              .replace(/\$HOME\b/g, '/home/emmanuel');
+            outputHtml = `<div class="output">${escapeHtml(text)}</div>`;
+            break;
+          }
+
+          case 'history': {
+            const lines = state.history.map((h, i) => `  ${String(i + 1).padStart(3, ' ')}  ${escapeHtml(h)}`).join('\n');
+            outputHtml = `<div class="output">${lines}</div>`;
+            break;
+          }
+
+          case 'cd': {
+            const targetArg = args[0] || '~';
+            const targetPath = resolvePath(state.cwd, targetArg);
+            const node = VFS[targetPath];
+            if (!node) {
+              outputHtml = `<div class="output">bash: cd: ${escapeHtml(targetArg)}: No such file or directory</div>`;
+            } else if (!isDirNode(node)) {
+              outputHtml = `<div class="output">bash: cd: ${escapeHtml(targetArg)}: Not a directory</div>`;
+            } else {
+              state.cwd = targetPath;
+              document.getElementById(`cwd-${tabId}`).textContent = state.cwd;
+              if (tabId === activeTabId) {
+                syncWindowAndDocTitle(state.cwd);
+              }
+              const tabEl = tabBar.querySelector(`[data-tab="${tabId}"] .tab-title`);
+              if (tabEl) tabEl.textContent = `emmanuel@portfolio: ${state.cwd}`;
+            }
+            break;
+          }
+
+          case 'ls': {
+            const flags = args.filter((a) => a.startsWith('-') && a.length > 1).join('');
+            const showAll = flags.includes('a');
+            const longFmt = flags.includes('l');
+            const pathArg = args.find((a) => !a.startsWith('-'));
+            const targetPath = resolvePath(state.cwd, pathArg || state.cwd);
+            const node = VFS[targetPath];
+
+            if (!node) {
+              outputHtml = `<div class="output">ls: cannot access '${escapeHtml(pathArg)}': No such file or directory</div>`;
+            } else if (!isDirNode(node)) {
+              outputHtml = `<div class="output">${escapeHtml(pathArg)}</div>`;
+            } else {
+              const hiddenEntries = ['.bashrc', '.bash_history', '.profile'];
+              const baseEntries = showAll ? ['.', '..', ...hiddenEntries, ...node.entries] : node.entries;
+              if (longFmt) {
+                const rows = baseEntries.map((entry) => {
+                  const childNode = (entry === '.' || entry === '..' || hiddenEntries.includes(entry))
+                    ? { type: entry === '.' || entry === '..' ? 'dir' : 'file' }
+                    : VFS[`${targetPath}/${entry}`];
+                  const isDir = isDirNode(childNode);
+                  const perms = isDir ? 'drwxr-xr-x' : '-rw-r--r--';
+                  const size = isDir ? '4096' : ' 512';
+                  const label = isDir ? `<span class="ls-dir">${escapeHtml(entry)}</span>` : escapeHtml(entry);
+                  return `${perms} 1 emmanuel emmanuel ${size} Nov 21 18:00 ${label}`;
+                });
+                outputHtml = `<div class="output">total ${baseEntries.length * 4}\n${rows.join('\n')}</div>`;
+              } else {
+                const inline = baseEntries.map((entry) => {
+                  const childNode = (entry === '.' || entry === '..' || hiddenEntries.includes(entry))
+                    ? { type: entry === '.' || entry === '..' ? 'dir' : 'file' }
+                    : VFS[`${targetPath}/${entry}`];
+                  return isDirNode(childNode) ? `<span class="ls-dir">${escapeHtml(entry)}</span>` : escapeHtml(entry);
+                }).join('  ');
+                outputHtml = `<div class="output">${inline}</div>`;
+              }
+            }
+            break;
+          }
+
+          case 'cat': {
+            if (!args[0]) {
+              outputHtml = `<div class="output">cat: missing file operand</div>`;
+            } else {
+              const targetPath = resolvePath(state.cwd, args[0]);
+              const node = VFS[targetPath];
+              if (!node) {
+                outputHtml = `<div class="output">cat: ${escapeHtml(args[0])}: No such file or directory</div>`;
+              } else if (isDirNode(node)) {
+                outputHtml = `<div class="output">cat: ${escapeHtml(args[0])}: Is a directory</div>`;
+              } else if (isImageNode(node)) {
+                outputHtml = `<div class="output">cat: ${escapeHtml(args[0])}: binary image file (use 'xdg-open ${escapeHtml(args[0])}' to view)</div>`;
+              } else {
+                outputHtml = `<div class="output">${escapeHtml(node)}</div>`;
+              }
+            }
+            break;
+          }
+
+          default:
+            outputHtml = `<div class="output">bash: ${escapeHtml(cmd)}: command not found</div>`;
+        }
+
+        historyEl.insertAdjacentHTML('beforeend', promptHtml + outputHtml);
+        paneEl.scrollTop = paneEl.scrollHeight;
+      }
+
+      function attachPromptListeners(tabId) {
+        const input = document.getElementById(`input-${tabId}`);
+        const mirror = document.getElementById(`mirror-${tabId}`);
+        if (!input || !mirror) return;
+
+        const syncMirror = () => {
+          mirror.textContent = input.value;
+        };
+
+        input.addEventListener('input', syncMirror);
+
+        input.addEventListener('keydown', (e) => {
+          const state = tabStates[tabId];
+          if (e.key === 'Enter') {
+            const val = input.value;
+            input.value = '';
+            syncMirror();
+            runCommand(tabId, val);
+          } else if (e.ctrlKey && e.key.toLowerCase() === 'l') {
+            e.preventDefault();
+            clearTerminalBuffer(tabId);
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (state.historyIdx > 0) {
+              state.historyIdx--;
+              input.value = state.history[state.historyIdx];
+              syncMirror();
+            }
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (state.historyIdx < state.history.length - 1) {
+              state.historyIdx++;
+              input.value = state.history[state.historyIdx];
+            } else {
+              state.historyIdx = state.history.length;
+              input.value = '';
+            }
+            syncMirror();
+          } else if (e.key === 'Tab') {
+            e.preventDefault();
+            const tokens = input.value.split(/\s+/);
+            const partial = tokens[tokens.length - 1];
+            const dirNode = VFS[state.cwd];
+            if (isDirNode(dirNode) && partial) {
+              const match = dirNode.entries.find((item) => item.startsWith(partial));
+              if (match) {
+                tokens[tokens.length - 1] = match;
+                input.value = tokens.join(' ');
+                syncMirror();
+              }
+            }
+          }
+        });
+      }
+
+      attachPromptListeners('tab-1');
+
+      terminalBody.addEventListener('click', (e) => {
+        if (!window.getSelection().toString() && !e.target.closest('a')) {
+          const activePane = document.getElementById(activeTabId);
+          const prevScrollTop = activePane ? activePane.scrollTop : null;
+          focusActivePrompt(true);
+          if (activePane && typeof prevScrollTop === 'number') {
+            requestAnimationFrame(() => {
+              activePane.scrollTop = prevScrollTop;
+            });
+          }
+        }
+      });
+
+      function switchTab(tabId) {
+        activeTabId = tabId;
+        document.querySelectorAll('.tab-item').forEach((t) => t.classList.toggle('active', t.dataset.tab === tabId));
+        document.querySelectorAll('.terminal-pane').forEach((p) => p.classList.toggle('active', p.id === tabId));
+        const state = tabStates[tabId];
+        if (state) {
+          syncWindowAndDocTitle(state.cwd);
+        }
+        focusActivePrompt();
+      }
+
+      function createNewTab() {
+        tabCounter++;
+        const newId = `tab-${tabCounter}`;
+        tabStates[newId] = { cwd: '~', history: [], historyIdx: -1 };
+
+        const tabEl = document.createElement('div');
+        tabEl.className = 'tab-item';
+        tabEl.dataset.tab = newId;
+        tabEl.innerHTML = `<span class="tab-title">emmanuel@portfolio: ~</span><button type="button" class="tab-close" title="Close Tab" aria-label="Close Tab">&times;</button>`;
+        tabBar.appendChild(tabEl);
+
+        const paneEl = document.createElement('div');
+        paneEl.className = 'terminal-pane';
+        paneEl.id = newId;
+        paneEl.innerHTML = `
+          <div class="terminal-content">
+            <div id="interactive-history-${newId}"></div>
+            <div class="live-prompt-row" id="prompt-row-${newId}">
+              <span><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path" id="cwd-${newId}">~</span><span class="ps1-dollar">$ </span></span>
+              <div class="live-input-wrap">
+                <span class="input-mirror" id="mirror-${newId}"></span><span class="vte-cursor" aria-hidden="true"></span>
+                <input type="text" class="bash-input" id="input-${newId}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Ubuntu bash command prompt">
+              </div>
+            </div>
+          </div>`;
+        terminalBody.appendChild(paneEl);
+
+        attachPromptListeners(newId);
+        syncTabPolicy();
+        switchTab(newId);
+      }
+
+      document.getElementById('newTabBtn').addEventListener('click', createNewTab);
+
+      tabBar.addEventListener('click', (e) => {
+        const closeBtn = e.target.closest('.tab-close');
+        const tabItem = e.target.closest('.tab-item');
+        if (!tabItem) return;
+        const targetId = tabItem.dataset.tab;
+
+        if (closeBtn) {
+          const allTabs = Array.from(tabBar.querySelectorAll('.tab-item'));
+          if (allTabs.length <= 1) return;
+          tabItem.remove();
+          document.getElementById(targetId).remove();
+          delete tabStates[targetId];
+          syncTabPolicy();
+          if (activeTabId === targetId) {
+            const remaining = tabBar.querySelector('.tab-item');
+            if (remaining) switchTab(remaining.dataset.tab);
+          }
+          return;
+        }
+        switchTab(targetId);
+      });
+
+      function openDialog(title, body) {
+        gtkPopover.classList.remove('open');
+        menuBtn.classList.remove('active');
+        dialogTitle.textContent = title;
+        dialogBody.textContent = body;
+        gtkDialogBackdrop.classList.add('open');
+      }
+
+      function closeDialog() {
+        gtkDialogBackdrop.classList.remove('open');
+        focusActivePrompt();
+      }
+
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const willOpen = !gtkPopover.classList.contains('open');
+        gtkPopover.classList.toggle('open', willOpen);
+        menuBtn.classList.toggle('active', willOpen);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#gtkPopover') && !e.target.closest('#menuBtn')) {
+          gtkPopover.classList.remove('open');
+          menuBtn.classList.remove('active');
+        }
+      });
+
+      document.getElementById('menuNewTab').addEventListener('click', () => {
+        gtkPopover.classList.remove('open');
+        menuBtn.classList.remove('active');
+        createNewTab();
+      });
+
+      document.getElementById('menuFind').addEventListener('click', () => {
+        gtkPopover.classList.remove('open');
+        menuBtn.classList.remove('active');
+        toggleSearch(true);
+      });
+
+      document.getElementById('menuClear').addEventListener('click', () => {
+        gtkPopover.classList.remove('open');
+        menuBtn.classList.remove('active');
+        clearTerminalBuffer(activeTabId);
+      });
+
+      document.getElementById('dialogCloseBtn').addEventListener('click', closeDialog);
+
+      gtkDialogBackdrop.addEventListener('click', (e) => {
+        if (e.target === gtkDialogBackdrop) closeDialog();
+      });
+
+      const maximizeBtn = document.getElementById('maximizeBtn');
+
+      function syncMaximizeButtonLabel() {
+        const isMax = terminalWindow.classList.contains('maximized');
+        maximizeBtn.title = isMax ? 'Restore' : 'Maximize';
+        maximizeBtn.setAttribute('aria-label', isMax ? 'Restore' : 'Maximize');
+      }
+
+      function toggleMaximizeWindow() {
+        terminalWindow.classList.remove('minimized', 'closed');
+        dockRestoreBar.classList.remove('visible');
+        terminalWindow.classList.toggle('maximized');
+        document.body.classList.toggle('is-maximized', terminalWindow.classList.contains('maximized'));
+        syncMaximizeButtonLabel();
+        showResizeOsd();
+        focusActivePrompt();
+      }
+
+      maximizeBtn.addEventListener('click', toggleMaximizeWindow);
+
+      document.getElementById('minimizeBtn').addEventListener('click', () => {
+        gtkPopover.classList.remove('open');
+        menuBtn.classList.remove('active');
+        terminalWindow.classList.remove('maximized');
+        document.body.classList.remove('is-maximized');
+        terminalWindow.classList.add('minimized');
+        dockRestoreBar.classList.add('visible');
+      });
+
+      document.getElementById('closeBtn').addEventListener('click', () => {
+        gtkPopover.classList.remove('open');
+        menuBtn.classList.remove('active');
+        terminalWindow.classList.add('closed');
+        dockRestoreBar.classList.add('visible');
+      });
+
+      document.getElementById('restoreWindowBtn').addEventListener('click', () => {
+        terminalWindow.classList.remove('minimized', 'closed');
+        dockRestoreBar.classList.remove('visible');
+        focusActivePrompt();
+      });
+
+      const searchBar = document.getElementById('searchBar');
+      const searchInput = document.getElementById('searchInput');
+      const searchCount = document.getElementById('searchCount');
+      const searchToggleBtn = document.getElementById('searchToggleBtn');
+
+      function clearSearchHighlights() {
+        document.querySelectorAll('mark.search-hit').forEach((m) => {
+          const parent = m.parentNode;
+          if (!parent) return;
+          parent.replaceChild(document.createTextNode(m.textContent), m);
+          parent.normalize();
+        });
+        searchHits = [];
+        searchHitIndex = -1;
+        searchCount.textContent = '0 matches';
+      }
+
+      function toggleSearch(forceState) {
+        const willOpen = typeof forceState === 'boolean' ? forceState : !searchBar.classList.contains('open');
+        searchBar.classList.toggle('open', willOpen);
+        searchToggleBtn.classList.toggle('active', willOpen);
+        if (willOpen) {
+          searchInput.focus();
+          searchInput.select();
+        } else {
+          clearSearchHighlights();
+          focusActivePrompt();
+        }
+      }
+
+      searchInput.addEventListener('input', () => {
+        clearSearchHighlights();
+        const query = searchInput.value.trim();
+        if (!query) return;
+
+        const pane = document.getElementById(activeTabId);
+        const walker = document.createTreeWalker(pane, NodeFilter.SHOW_TEXT, null);
+        const nodes = [];
+        let n;
+        while ((n = walker.nextNode())) {
+          if (
+            n.parentElement &&
+            !['SCRIPT', 'STYLE', 'INPUT', 'BUTTON'].includes(n.parentElement.tagName) &&
+            !n.parentElement.closest('.live-prompt-row')
+          ) {
+            nodes.push(n);
+          }
+        }
+
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        nodes.forEach((textNode) => {
+          if (regex.test(textNode.nodeValue)) {
+            const frag = document.createDocumentFragment();
+            textNode.nodeValue.split(regex).forEach((part) => {
+              if (part.toLowerCase() === query.toLowerCase()) {
+                const mark = document.createElement('mark');
+                mark.className = 'search-hit';
+                mark.textContent = part;
+                frag.appendChild(mark);
+                searchHits.push(mark);
+              } else if (part) {
+                frag.appendChild(document.createTextNode(part));
+              }
+            });
+            textNode.parentNode.replaceChild(frag, textNode);
+          }
+        });
+
+        const total = searchHits.length;
+        if (total > 0) {
+          searchHitIndex = 0;
+          searchCount.textContent = `1/${total}`;
+          searchHits[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          searchCount.textContent = '0 matches';
+        }
+      });
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && searchHits.length > 0) {
+          e.preventDefault();
+          searchHitIndex = (searchHitIndex + 1) % searchHits.length;
+          searchCount.textContent = `${searchHitIndex + 1}/${searchHits.length}`;
+          searchHits[searchHitIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+
+      searchToggleBtn.addEventListener('click', () => toggleSearch());
+      document.getElementById('searchCloseBtn').addEventListener('click', () => toggleSearch(false));
+
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'f') {
+          e.preventDefault();
+          toggleSearch(true);
+        } else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 't') {
+          e.preventDefault();
+          createNewTab();
+        } else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'w') {
+          const allTabs = Array.from(tabBar.querySelectorAll('.tab-item'));
+          if (allTabs.length > 1) {
+            e.preventDefault();
+            const activeTabEl = tabBar.querySelector(`[data-tab="${activeTabId}"]`);
+            const closeBtn = activeTabEl && activeTabEl.querySelector('.tab-close');
+            if (closeBtn) closeBtn.click();
+          }
+        } else if (e.key === 'Escape') {
+          if (imageViewerModal.classList.contains('open')) {
+            closeIdViewer();
+            return;
+          }
+          if (gtkDialogBackdrop.classList.contains('open')) {
+            closeDialog();
+            return;
+          }
+          if (searchBar.classList.contains('open')) {
+            toggleSearch(false);
+            return;
+          }
+          gtkPopover.classList.remove('open');
+          menuBtn.classList.remove('active');
+        }
+      });
+
+      focusActivePrompt();
+    })();
+  </script>
+</body>
+</html>
