@@ -929,7 +929,7 @@
   <img
     class="desktop-wallpaper"
     alt="Ubuntu Desktop Wallpaper"
-    src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232c001e'/%3E%3Cstop offset='50%25' stop-color='%235e2750'/%3E%3Cstop offset='100%25' stop-color='%23772953'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='25%25' cy='30%25' r='55%25'%3E%3Cstop offset='0%25' stop-color='%23e95420' stop-opacity='0.42'/%3E%3Cstop offset='100%25' stop-color='%23e95420' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='1600' height='900' fill='url(%23bg)'/%3E%3Crect width='1600' height='900' fill='url(%23glow)'/%3E%3Cpolygon points='0,900 620,260 1120,900' fill='%23240018' fill-opacity='0.34'/%3E%3Cpolygon points='720,0 1600,0 1600,640 1040,420' fill='%23e95420' fill-opacity='0.14'/%3E%3Ccircle cx='1280' cy='210' r='220' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='2'/%3E%3C/svg%3E"
+    src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='xMidYMid slice'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%232c001e'/%3E%3Cstop offset='50%25' stop-color='%235e2750'/%3E%3Cstop offset='100%25' stop-color='%23772953'/%3E%3C/linearGradient%3E%3CradialGradient id='glow' cx='25%25' cy='30%25' r='55%25'%3E%3Cstop offset='0%25' stop-color='%23e95420' stop-opacity='0.42'/%3E%3Cstop offset='100%25' stop-color='%23e95420' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect width='1600' height='900' fill='url(%23bg)'/%3E%3Crect width='1600' height='900' fill='url(%23glow)'/%3E%3Cpolygon points='0,900 620,260 1120,900' fill='%23240018' fill-opacity='0.34'/%3E%3Cpolygon points='720,0 1600,0 1600,640 1040,420' fill='%23e95420' fill-opacity='0.14'/%3E%3Ccircle cx='1280' cy='210' r='220' fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='2'/%3E%3C/svg%3E"
   >
 
   <main class="terminal-window" id="terminalWindow" aria-label="Ubuntu GNOME Terminal">
@@ -2121,7 +2121,16 @@ Available commands:
         }
       });
 
-      focusActivePrompt();
+      const initialPane = document.getElementById('tab-1');
+      if (initialPane) {
+        initialPane.scrollTop = 0;
+      }
+      focusActivePrompt(true);
+      requestAnimationFrame(() => {
+        if (initialPane) {
+          initialPane.scrollTop = 0;
+        }
+      });
     })();
   </script>
 </body>
