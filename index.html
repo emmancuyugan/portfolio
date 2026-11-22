@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#300a24">
   <meta name="description" content="Emmanuel Luis B. Cuyugan - Linux Systems Administration, Networking and IT Infrastructure Portfolio">
   <title>emmanuel@portfolio: ~</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23300a24'/%3E%3Cpath d='M7.5 10.5L13.5 16L7.5 21.5' stroke='%23e95420' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Cpath d='M16 21.5H24.5' stroke='%238ae234' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -230,6 +231,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 6px;
       padding: 0 8px;
       background: var(--yaru-header);
       border-bottom: 1px solid var(--yaru-header-border);
@@ -247,6 +249,7 @@
       display: flex;
       align-items: center;
       gap: 4px;
+      flex-shrink: 0;
       z-index: 2;
       cursor: default;
     }
@@ -892,6 +895,16 @@
       text-underline-offset: 2px;
     }
 
+    @media (max-width: 900px) {
+      body {
+        padding: 16px 12px;
+      }
+
+      .terminal-window {
+        height: min(720px, calc(100vh - 32px));
+      }
+    }
+
     @media (max-width: 680px) {
       body {
         padding: 0;
@@ -910,11 +923,28 @@
 
       .headerbar {
         cursor: default;
+        padding: 0 6px;
       }
 
       .window-title {
-        max-width: 44%;
+        position: static;
+        transform: none;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+        text-align: center;
+        padding: 0 4px;
         font-size: 12px;
+      }
+
+      .window-controls {
+        margin-left: 2px;
+        gap: 2px;
+      }
+
+      .win-ctrl {
+        width: 22px;
+        height: 22px;
       }
 
       .terminal-pane {
@@ -926,11 +956,63 @@
         font-size: 13.5px;
       }
     }
+
+    @media (max-height: 620px) {
+      .terminal-window {
+        min-height: 320px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+
+      .vte-cursor {
+        animation: none !important;
+        opacity: 1 !important;
+      }
+    }
   </style>
 </head>
 <body>
 
   <h1 class="sr-only">Emmanuel Luis B. Cuyugan</h1>
+
+  <section class="sr-only" aria-label="Portfolio summary">
+    <h2>About Emmanuel Luis B. Cuyugan</h2>
+    <p>Bachelor of Science in Computer Engineering graduate with a specialization in Systems Administration from the Technological Institute of the Philippines - Quezon City (graduated April 25, 2026). Focused on Linux Systems Administration, Networking, and IT Infrastructure in Quezon City, Philippines.</p>
+
+    <h2>IT Skills</h2>
+    <ul>
+      <li>Systems Administration: Linux (Ubuntu, CentOS), Windows, User and Group Management, Process Management, SSH, systemd</li>
+      <li>Networking: Cisco Routers and Switches, TCP/IP, Routing, Subnetting, VLANs, NAT, Wireshark, Network Troubleshooting</li>
+      <li>Virtualization: VMware, VirtualBox</li>
+      <li>Automation and Tools: Bash, Python, Ansible, Git, GitHub, Cron, Microsoft Excel, Google Sheets</li>
+      <li>Hardware: Hardware Diagnostics and Repair, Hardware Installation, Printer and Peripheral Configuration</li>
+    </ul>
+
+    <h2>Experience, Projects &amp; Certifications</h2>
+    <ul>
+      <li>Data Management Intern — Energy Regulatory Commission, Pasig City (March 2026 - April 2026, 240.9 Hours)</li>
+      <li>Senyasalin: Offline Filipino Sign Language Recognition with Feedback System (NVIDIA Jetson Orin Nano, Ubuntu Linux, TensorRT, Bash, systemd)</li>
+      <li>Misty: Mobile-Based Heat Index Recommendation Application (Node.js, Express.js, OpenWeather, OpenCage)</li>
+      <li>Cisco Networking Academy: Linux 1 and Linux 2, DevNet Associate, CCNA: Switching, Routing, and Wireless Essentials, CCNA: Introduction to Networks, IT Essentials: PC Hardware and Software</li>
+    </ul>
+
+    <h2>Contact</h2>
+    <ul>
+      <li>Location: Quezon City, Philippines</li>
+      <li>Email: <a href="mailto:emmancuyugan@gmail.com">emmancuyugan@gmail.com</a></li>
+      <li>GitHub: <a href="https://github.com/emmancuyugan">https://github.com/emmancuyugan</a></li>
+      <li>LinkedIn: <a href="https://www.linkedin.com/in/emmancuyugan/">https://www.linkedin.com/in/emmancuyugan/</a></li>
+    </ul>
+  </section>
 
   <img
     class="desktop-wallpaper"
@@ -1021,8 +1103,8 @@
       <div class="terminal-pane active" id="tab-1">
         <div class="terminal-content" id="output-tab-1">
 
-          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">xdg-open </span><a class="terminal-link" href="assets/id.png" onclick="openIdViewer(event, 'assets/id.png')">assets/id.png</a></div>
-          <div class="output muted">Opening "assets/id.png" with Image Viewer... (click <a class="terminal-link" href="assets/id.png" onclick="openIdViewer(event, 'assets/id.png')">assets/id.png</a> above or run <span class="cmd-text">xdg-open assets/id.png</span>)</div>
+          <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">xdg-open </span><a class="terminal-link" href="assets/id.jpg" onclick="openIdViewer(event, 'assets/id.jpg')">assets/id.jpg</a></div>
+          <div class="output muted">Opening "assets/id.jpg" with Image Viewer... (click <a class="terminal-link" href="assets/id.jpg" onclick="openIdViewer(event, 'assets/id.jpg')">assets/id.jpg</a> above or run <span class="cmd-text">xdg-open assets/id.jpg</span>)</div>
 
           <div class="prompt-line"><span class="ps1-userhost">emmanuel@portfolio</span><span class="ps1-colon">:</span><span class="ps1-path">~</span><span class="ps1-dollar">$ </span><span class="cmd-text">whoami</span></div>
           <div class="output">emmanuel</div>
@@ -1160,9 +1242,6 @@ total 4
 <span class="bold yellow">EMAIL</span>
   <a class="terminal-link" href="mailto:emmancuyugan@gmail.com">emmancuyugan@gmail.com</a>
 
-<span class="bold yellow">PHONE</span>
-  <a class="terminal-link" href="tel:+639683251772">+639683251772</a>
-
 <span class="bold yellow">GITHUB</span>
   <a class="terminal-link" href="https://github.com/emmancuyugan" target="_blank" rel="noopener noreferrer">https://github.com/emmancuyugan</a>
 
@@ -1194,6 +1273,10 @@ total 4
 
   </main>
 
+  <footer class="sr-only">
+    <p>&copy; 2026 Emmanuel Luis B. Cuyugan. Linux Systems Administration, Networking &amp; IT Infrastructure.</p>
+  </footer>
+
   <button type="button" class="desktop-shortcut" id="desktopTerminalShortcut" aria-label="Open Terminal" title="Open Terminal">
     <span class="desktop-shortcut-icon" aria-hidden="true">
       <img
@@ -1215,7 +1298,7 @@ total 4
   <div class="image-viewer-backdrop" id="image-viewer-modal" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
     <div class="image-viewer-window">
       <div class="viewer-header">
-        <span id="viewerTitle">assets/id.png — Image Viewer</span>
+        <span id="viewerTitle">assets/id.jpg — Image Viewer</span>
         <button type="button" class="win-ctrl close" id="viewerCloseBtn" title="Close Viewer" aria-label="Close Viewer">
           <svg viewBox="0 0 12 12" aria-hidden="true">
             <path d="M3 3l6 6M9 3L3 9"/>
@@ -1224,18 +1307,18 @@ total 4
       </div>
       <div class="viewer-body">
         <div class="id-card-frame" id="idCardFrame">
-          <img id="id-card-img" src="assets/id.png" alt="Emmanuel Luis B. Cuyugan ID">
+          <img id="id-card-img" loading="lazy" alt="Emmanuel Luis B. Cuyugan ID">
         </div>
         <div class="viewer-fallback" id="viewerFallback">
-          <strong><span id="viewerMissingName">assets/id.png</span> not found yet.</strong><br>
-          Place your ID image at <code>./assets/id.png</code> alongside <code>index.html</code>, or load a local image file below to preview it right now:
+          <strong><span id="viewerMissingName">assets/id.jpg</span> not found yet.</strong><br>
+          Place your ID image at <code>./assets/id.jpg</code> alongside <code>index.html</code>, or load a local image file below to preview it right now:
         </div>
         <div class="viewer-actions">
           <label class="viewer-file-label" for="idFileInput">
             <span>Choose Local ID Image…</span>
           </label>
           <input type="file" id="idFileInput" accept="image/*">
-          <a class="viewer-direct-link" id="viewerDirectLink" href="assets/id.png" target="_blank" rel="noopener noreferrer">Open raw assets/id.png</a>
+          <a class="viewer-direct-link" id="viewerDirectLink" href="assets/id.jpg" target="_blank" rel="noopener noreferrer">Open raw assets/id.jpg</a>
         </div>
       </div>
     </div>
@@ -1277,7 +1360,7 @@ total 4
       let tabCounter = 1;
       let resizeTimer = null;
       let customObjectUrl = null;
-      let currentViewerPath = 'assets/id.png';
+      let currentViewerPath = 'assets/id.jpg';
       let savedScrollTop = null;
       let savedScrollTabId = null;
       let searchHits = [];
@@ -1296,7 +1379,7 @@ total 4
         },
         '~/assets': {
           type: 'dir',
-          entries: ['id.png', 'wallpaper.png']
+          entries: ['id.jpg', 'wallpaper.png']
         },
         '~/skills': {
           type: 'dir',
@@ -1334,9 +1417,9 @@ total 4
           type: 'dir',
           entries: ['cisco-networking-academy.txt']
         },
-        '~/assets/id.png': {
+        '~/assets/id.jpg': {
           type: 'image',
-          src: 'assets/id.png'
+          src: 'assets/id.jpg'
         },
         '~/assets/wallpaper.png': {
           type: 'image',
@@ -1344,7 +1427,7 @@ total 4
         },
         '~/about.txt': `NAME\n  Emmanuel Luis Cuyugan\n\nLOCATION\n  Quezon City, Philippines\n\nPROFILE\n  Bachelor of Science in Computer Engineering graduate with a\n  specialization in Systems Administration from the\n  Technological Institute of the Philippines - Quezon City\n  (graduated April 25, 2026).\n\n  Focused on Linux Systems Administration, Networking, and\n  IT Infrastructure.`,
         '~/education.txt': `Technological Institute of the Philippines — Quezon City\n  Degree: Bachelor of Science in Computer Engineering\n  Specialization: Systems Administration\n  Graduated: April 25, 2026\n  Accreditation: ABET Engineering Accreditation Commission (EAC)\n  Relevant Coursework: Linux Systems Administration, System and\n    Network Administration, Data Communications and Networking,\n    Operating Systems, Information Security, Cloud Computing\n    Foundations`,
-        '~/contact.txt': `LOCATION\n  Quezon City, Philippines\n\nEMAIL\n  emmancuyugan@gmail.com\n\nPHONE\n  +639683251772\n\nGITHUB\n  https://github.com/emmancuyugan\n\nLINKEDIN\n  https://www.linkedin.com/in/emmancuyugan/`,
+        '~/contact.txt': `LOCATION\n  Quezon City, Philippines\n\nEMAIL\n  emmancuyugan@gmail.com\n\nGITHUB\n  https://github.com/emmancuyugan\n\nLINKEDIN\n  https://www.linkedin.com/in/emmancuyugan/`,
         '~/skills/systems-administration/skills.txt': `Systems Administration\n  Linux (Ubuntu, CentOS), Windows\n  User and Group Management, Process Management\n  SSH, systemd`,
         '~/skills/networking/skills.txt': `Networking\n  Cisco Routers and Switches, TCP/IP\n  Routing, Subnetting, VLANs, NAT\n  Wireshark, Network Troubleshooting`,
         '~/skills/virtualization/skills.txt': `Virtualization\n  VMware, VirtualBox`,
@@ -1451,7 +1534,7 @@ total 4
         }
       });
 
-      window.openIdViewer = function openIdViewer(event, imagePath = 'assets/id.png') {
+      window.openIdViewer = function openIdViewer(event, imagePath = 'assets/id.jpg') {
         if (event) event.preventDefault();
         gtkPopover.classList.remove('open');
         menuBtn.classList.remove('active');
@@ -1462,7 +1545,7 @@ total 4
           savedScrollTop = activePane.scrollTop;
         }
 
-        const normalizedPath = (imagePath || 'assets/id.png').replace(/^~\//, '').replace(/^\.\//, '');
+        const normalizedPath = (imagePath || 'assets/id.jpg').replace(/^~\//, '').replace(/^\.\//, '');
         currentViewerPath = normalizedPath;
         viewerTitle.textContent = `${normalizedPath} — Image Viewer`;
         viewerMissingName.textContent = normalizedPath;
@@ -1477,7 +1560,7 @@ total 4
 
         idCardImg.src = normalizedPath;
 
-        if (idCardImg.complete) {
+        if (idCardImg.complete && idCardImg.src) {
           setImageViewerState(idCardImg.naturalWidth > 0);
         } else {
           idCardFrame.style.display = 'flex';
@@ -1624,7 +1707,7 @@ total 4
             return;
 
           case 'xdg-open': {
-            const rawTarget = args[0] || 'assets/id.png';
+            const rawTarget = args[0] || 'assets/id.jpg';
             const resolved = resolvePath(state.cwd, rawTarget);
             const node = VFS[resolved];
             if (isImageNode(node)) {
@@ -1644,7 +1727,7 @@ total 4
           case 'help':
             outputHtml = `<div class="output">GNU bash, version 5.3.0(1)-release (x86_64-pc-linux-gnu)
 Available commands:
-  <span class="green">xdg-open assets/id.png</span>  Open ID image in viewer modal
+  <span class="green">xdg-open assets/id.jpg</span>  Open ID image in viewer modal
   <span class="green">ls</span> [-l|-la] [dir]       List directory contents
   <span class="green">cd</span> [dir]                Change current directory
   <span class="green">cat</span> &lt;file&gt;              Concatenate and print file contents
